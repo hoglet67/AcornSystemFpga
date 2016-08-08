@@ -650,6 +650,7 @@ fdc_do <= x"00" when cpu_a(7 downto 0) = "00000000" else
     ram_enable       <= '1' when cpu_a(15 downto 10) = "000000"     else -- 0x0000-0x03FF
                         '1' when cpu_a(15 downto 13) = "001"        else -- 0x2000-0x3FFF
                         '1' when cpu_a(15 downto 14) = "01"         else -- 0x4000-0x7FFF
+                        '1' when cpu_a(15 downto 13) = "100"        else -- 0x8000-0x9FFF
                         '0';
 
     vdu40_ram_enable <= '1' when cpu_a(15 downto 10) = "000001"     else -- 0x0400-0x07FF
