@@ -180,8 +180,7 @@ signal ram_enable       :   std_logic;
 signal rom_enable       :   std_logic;
 
 -- Keyboard signals
-signal keyb_break       :   std_logic;
-signal keyb_data        :   std_logic_vector(7 downto 0);
+signal keyb_break_n     :   std_logic;
 
 -- FDC signals
 signal fdc_enable       :   std_logic;
@@ -219,7 +218,7 @@ signal vdu40_ram_do     :   std_logic_vector(7 downto 0);
 signal vdu40_vid_do     :   std_logic_vector(7 downto 0);
 
 -- VDU80 crtc signals
-signal vdu80_clken_counter   :   unsigned(15 downto 0);
+signal vdu80_clken_counter   :   unsigned(3 downto 0);
 signal vdu80_clken      :   std_logic;
 signal vdu80_do         :   std_logic_vector(7 downto 0);
 signal vdu80_vsync      :   std_logic;
@@ -227,6 +226,7 @@ signal vdu80_hsync      :   std_logic;
 signal vdu80_de         :   std_logic;
 signal vdu80_de1        :   std_logic;
 signal vdu80_cursor     :   std_logic;
+signal vdu80_cursor1    :   std_logic;
 constant vdu80_lpstb    :   std_logic := '0';
 signal vdu80_ma         :   std_logic_vector(13 downto 0);
 signal vdu80_ra         :   std_logic_vector(4 downto 0);
@@ -294,7 +294,7 @@ begin
 
     -- Keyboard and System VIA and Video are by a power up reset signal
     -- Rest of system is reset by all of the above plus keyboard BREAK key
-    reset_n <= reset_n_out and hard_reset_n and not keyb_break;
+    reset_n <= reset_n_out and hard_reset_n and keyb_break_n;
     reset   <= not reset_n;
 
 --------------------------------------------------------
@@ -600,11 +600,12 @@ begin
             end if;
             if vdu80_clken_counter(0) = '1' then
                 vdu80_de1 <= vdu80_de;
+                vdu80_cursor1 <= vdu80_cursor;
             end if;
             if vdu80_de1 = '1' then
-                vdu80_r <= vdu80_sr(7) xor vdu80_cursor;
-                vdu80_g <= vdu80_sr(7) xor vdu80_cursor;
-                vdu80_b <= vdu80_sr(7) xor vdu80_cursor;
+                vdu80_r <= vdu80_sr(7) xor vdu80_cursor1;
+                vdu80_g <= vdu80_sr(7) xor vdu80_cursor1;
+                vdu80_b <= vdu80_sr(7) xor vdu80_cursor1;
             else
                 vdu80_r <= '0';
                 vdu80_g <= '0';
@@ -627,18 +628,23 @@ fdc_do <= x"00" when cpu_a(7 downto 0) = "00000000" else
 -- 200,013 Keyboard
 --------------------------------------------------------
 
-caps_led   <= '0';
-shift_led  <= '0';
-keyb_break <= '0';
-keyb_data  <= "11000000";
-
-sys_via_pa_in <= keyb_data;
+    keyb : entity work.keyboard port map (
+        clock      => clock_32,
+        nreset     => hard_reset_n,
+        ps2_clk    => ps2_kbd_clk,
+        ps2_data   => ps2_kbd_data,
+        nbreak_in  => '1',
+        nbreak_out => keyb_break_n,
+        caps_led   => caps_led,
+        shift_led  => shift_led,
+        keyout     => sys_via_pa_in
+        );
 
 --------------------------------------------------------
 -- Address decoding
 --------------------------------------------------------
 
-    rom_enable       <= '1' when cpu_a(15 downto 14) = "11"         else -- 0xC000-0xFFFF
+    rom_enable       <= '1' when cpu_a(15 downto 12) >= "1010"      else -- 0xA000-0xFFFF
                         '0';
 
     ram_enable       <= '1' when cpu_a(15 downto 10) = "000000"     else -- 0x0000-0x03FF
