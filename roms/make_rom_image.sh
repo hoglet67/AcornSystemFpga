@@ -15,10 +15,7 @@ rm -f $IMAGE
 
 cat generic/blank.rom          >> $IMAGE
 cat generic/blank.rom          >> $IMAGE
-cat generic/blank.rom          >> $IMAGE
-cat generic/blank.rom          >> $IMAGE
-cat generic/abasic.rom         >> $IMAGE
-cat generic/afloat.rom         >> $IMAGE
+cat generic/SBASIC1.rom        >> $IMAGE
 cat generic/blank.rom          >> $IMAGE
 cat system3/TOSDOS-S3.rom      >> $IMAGE
 
@@ -26,9 +23,6 @@ cat system3/TOSDOS-S3.rom      >> $IMAGE
 
 cat generic/blank.rom          >> $IMAGE
 cat generic/blank.rom          >> $IMAGE
-cat generic/blank.rom          >> $IMAGE
-cat generic/blank.rom          >> $IMAGE
-cat generic/abasic.rom         >> $IMAGE
-cat generic/afloat.rom         >> $IMAGE
+cat generic/SBASIC1.rom        >> $IMAGE
 cat generic/blank.rom          >> $IMAGE
 cat system5/System5-1F.rom     >> $IMAGE
